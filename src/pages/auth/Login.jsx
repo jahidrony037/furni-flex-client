@@ -1,3 +1,4 @@
+import { GoogleAuthProvider, OAuthProvider } from "firebase/auth";
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { IoEye, IoEyeOff } from "react-icons/io5";
@@ -5,7 +6,6 @@ import { SiApple } from "react-icons/si";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import furnilFlex from "../../../public/furniFlex.png";
-import Loader from "../../components/shared/Loader/Loader";
 import useAuth from "../../hooks/useAuth/useAuth";
 const Login = () => {
   const [toggleEye, setToggleEye] = useState(true);
@@ -14,11 +14,11 @@ const Login = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const { loginUser, loading, user } = useAuth();
+  const { loginUser, loading, user, handleSocialLogin } = useAuth();
 
-  if (loading) {
-    return <Loader />;
-  }
+  // if (loading) {
+  //   return <Loader />;
+  // }
 
   if (user) {
     navigate("/");
@@ -41,6 +41,32 @@ const Login = () => {
       }
     } catch (error) {
       toast.error(error.message);
+    }
+  };
+
+  const googleProvider = new GoogleAuthProvider();
+  const appleProvider = new OAuthProvider("apple.com");
+  const handleGoogleLogin = async (googleProvider) => {
+    try {
+      const result = await handleSocialLogin(googleProvider);
+      if (result?.user) {
+        toast.success("Login Successfully");
+        navigate("/");
+      }
+    } catch (error) {
+      toast.error(error.message, { position: "top-center" });
+    }
+  };
+
+  const handleAppleLogin = async (appleProvider) => {
+    try {
+      const result = await handleSocialLogin(appleProvider);
+      if (result?.user) {
+        toast.success("Login Successfully");
+        navigate("/");
+      }
+    } catch (error) {
+      toast.error(error.message, { position: "top-center" });
     }
   };
 
@@ -149,11 +175,17 @@ const Login = () => {
 
             {/* Social Login */}
             <div className="flex items-center gap-4 justify-between">
-              <div className="btn bg-white px-5 border-[1px] border-solid border-[#D9D9D9] rounded-[6px]">
+              <div
+                onClick={() => handleGoogleLogin(googleProvider)}
+                className="btn bg-white px-5 border-[1px] border-solid border-[#D9D9D9] rounded-[6px]"
+              >
                 <FcGoogle size={30} />
                 <button>Sign in with Google</button>
               </div>
-              <div className="btn bg-white px-5 border-[1px] border-solid border-[#D9D9D9] rounded-[6px]">
+              <div
+                onClick={() => handleAppleLogin(appleProvider)}
+                className="btn bg-white px-5 border-[1px] border-solid border-[#D9D9D9] rounded-[6px]"
+              >
                 <SiApple size={30} />
                 <button>Sign in with Apple</button>
               </div>

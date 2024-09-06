@@ -1,12 +1,16 @@
-import { updateProfile } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  OAuthProvider,
+  updateProfile,
+} from "firebase/auth";
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import { SiApple } from "react-icons/si";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import furnilFlex from "../../../public/furniFlex.png";
-import Loader from "../../components/shared/Loader/Loader";
 import useAuth from "./../../hooks/useAuth/useAuth";
 
 const SignUP = () => {
@@ -17,11 +21,11 @@ const SignUP = () => {
   const navigate = useNavigate();
 
   // fetch the necessary methods
-  const { createUser, loading, user, logOut } = useAuth();
+  const { createUser, loading, user, logOut, handleSocialLogin } = useAuth();
 
-  if (loading) {
-    return <Loader />;
-  }
+  // if (loading) {
+  //   return <Loader />;
+  // }
 
   if (user) {
     navigate("/");
@@ -48,28 +52,42 @@ const SignUP = () => {
       setTermsError("");
     }
 
-    createUser(email, password).then((result) => {
-      const user = result.user;
-      if (user) {
-        updateProfile(user, {
-          displayName: name,
-        }).then(() => {
-          Swal.fire({
-            title: "Registration Successful",
-            text: "Now you can Login!",
-            icon: "success",
-          });
-          logOut()
-            .then(() => {
-              event.target.reset();
-              navigate("/login");
-            })
-            .catch((err) => {
-              console.log(err.message);
+    createUser(email, password)
+      .then((result) => {
+        const user = result.user;
+        if (user) {
+          updateProfile(user, {
+            displayName: name,
+          }).then(() => {
+            Swal.fire({
+              title: "Registration Successful",
+              text: "Now you can Login!",
+              icon: "success",
             });
+            logOut()
+              .then(() => {
+                event.target.reset();
+                navigate("/login");
+              })
+              .catch((err) => {
+                Swal.fire({
+                  icon: "error",
+                  title: "Oops...",
+                  text: err.message,
+                });
+              });
+          });
+        }
+      })
+      .catch((err) => {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: err.message,
         });
-      }
-    });
+        event.target.reset();
+      });
+
     // console.log(res);
 
     const userSignUPInfo = {
@@ -80,6 +98,33 @@ const SignUP = () => {
     };
     console.log(userSignUPInfo);
   };
+
+  const googleProvider = new GoogleAuthProvider();
+  const appleProvider = new OAuthProvider("apple.com");
+  const handleGoogleLogin = async (googleProvider) => {
+    try {
+      const result = await handleSocialLogin(googleProvider);
+      if (result?.user) {
+        toast.success("Login Successfully");
+        navigate("/");
+      }
+    } catch (error) {
+      toast.error(error.message, { position: "top-center" });
+    }
+  };
+
+  const handleAppleLogin = async (appleProvider) => {
+    try {
+      const result = await handleSocialLogin(appleProvider);
+      if (result?.user) {
+        toast.success("Login Successfully");
+        navigate("/");
+      }
+    } catch (error) {
+      toast.error(error.message, { position: "top-center" });
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-center items-center">
@@ -232,11 +277,17 @@ const SignUP = () => {
 
             {/* Social Login */}
             <div className="flex md:flex-row flex-col items-center gap-4 justify-between">
-              <div className="btn bg-white px-5 border-[1px] border-solid border-[#D9D9D9] rounded-[6px]">
+              <div
+                onClick={() => handleGoogleLogin(googleProvider)}
+                className="btn bg-white px-5 border-[1px] border-solid border-[#D9D9D9] rounded-[6px]"
+              >
                 <FcGoogle size={30} />
                 <button>Sign in with Google</button>
               </div>
-              <div className="btn bg-white px-5 border-[1px] border-solid border-[#D9D9D9] rounded-[6px]">
+              <div
+                onClick={() => handleAppleLogin(appleProvider)}
+                className="btn bg-white px-5 border-[1px] border-solid border-[#D9D9D9] rounded-[6px]"
+              >
                 <SiApple size={30} />
                 <button>Sign in with Apple</button>
               </div>
