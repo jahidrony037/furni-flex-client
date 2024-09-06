@@ -1,0 +1,29 @@
+li > a {
+  color: #202020 !important;
+  font-size: 18px;
+  font-weight: 500;
+  background: none !important;
+}
+
+.active {
+  font-weight: 600;
+  background: #f8f8f8 !important;
+  border-radius: 6px;
+  padding: 8px 20px;
+}
+.furni {
+  color: #000;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+}
+.flex {
+  color: #1e99f5;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+}

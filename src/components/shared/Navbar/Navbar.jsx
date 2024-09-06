@@ -1,6 +1,46 @@
 import React from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import icon from "../../../../public/icon.png";
+import useAuth from "./../../../hooks/useAuth/useAuth";
+import "./Navbar.css";
 
 const Navbar = () => {
+  const { logOut, user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = () => {
+    logOut()
+      .then(() => {
+        toast.success("Log Out Successfully", {
+          position: "top-center",
+        });
+      })
+      .catch((error) => {
+        toast.error(error.message);
+      });
+  };
+
+  const navLinks = (
+    <>
+      <li>
+        <NavLink to={"/"}>Home</NavLink>
+      </li>
+      <li>
+        <NavLink to={"/products"}>Products</NavLink>
+      </li>
+      <li>
+        <NavLink to={"/categories"}>Categories</NavLink>
+      </li>
+      <li>
+        <NavLink to={"/custom"}>Custom</NavLink>
+      </li>
+      <li>
+        <NavLink to={"/blog"}>Blog</NavLink>
+      </li>
+    </>
+  );
+
   return (
     <div className="navbar bg-base-100">
       <div className="navbar-start">
@@ -25,50 +65,25 @@ const Navbar = () => {
             tabIndex={0}
             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
           >
-            <li>
-              <a>Item 1</a>
-            </li>
-            <li>
-              <a>Parent</a>
-              <ul className="p-2">
-                <li>
-                  <a>Submenu 1</a>
-                </li>
-                <li>
-                  <a>Submenu 2</a>
-                </li>
-              </ul>
-            </li>
-            <li>
-              <a>Item 3</a>
-            </li>
+            {navLinks}
           </ul>
         </div>
-        <a className="btn btn-ghost text-xl text-secondary-color">daisyUI</a>
+        <Link to="/">
+          <div className="flex items-center justify-center">
+            <img
+              src={icon}
+              alt="logo"
+              className="w-[38px] h-[38px] object-center"
+            />
+            <span className="furni pl-[6px]">Furni</span>{" "}
+            <span className="flex">Flex</span>
+          </div>
+        </Link>
       </div>
       <div className="navbar-center hidden lg:flex">
-        <ul className="menu menu-horizontal px-1">
-          <li>
-            <a>Item 1</a>
-          </li>
-          <li>
-            <details>
-              <summary>Parent</summary>
-              <ul className="p-2">
-                <li>
-                  <a>Submenu 1</a>
-                </li>
-                <li>
-                  <a>Submenu 2</a>
-                </li>
-              </ul>
-            </details>
-          </li>
-          <li>
-            <a>Item 3</a>
-          </li>
-        </ul>
+        <ul className="menu menu-horizontal px-1">{navLinks}</ul>
       </div>
+
       <div className="navbar-end">
         <div className="dropdown dropdown-end">
           <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
@@ -103,37 +118,46 @@ const Navbar = () => {
             </div>
           </div>
         </div>
-        <div className="dropdown dropdown-end">
-          <div
-            tabIndex={0}
-            role="button"
-            className="btn btn-ghost btn-circle avatar"
-          >
-            <div className="w-10 rounded-full">
-              <img
-                alt="Tailwind CSS Navbar component"
-                src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
-              />
+        {user ? (
+          <div className="dropdown dropdown-end">
+            <div
+              tabIndex={0}
+              role="button"
+              className="btn btn-ghost btn-circle avatar"
+            >
+              <div className="w-10 rounded-full">
+                <img
+                  alt="Tailwind CSS Navbar component"
+                  src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+                />
+              </div>
             </div>
+            <ul
+              tabIndex={0}
+              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
+            >
+              <li>
+                <a className="justify-between">
+                  Profile
+                  <span className="badge">New</span>
+                </a>
+              </li>
+
+              <li>
+                <a
+                  className="btn bg-primary-color text-white"
+                  onClick={() => handleSignOut()}
+                >
+                  Logout
+                </a>
+              </li>
+            </ul>
           </div>
-          <ul
-            tabIndex={0}
-            className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
-          >
-            <li>
-              <a className="justify-between">
-                Profile
-                <span className="badge">New</span>
-              </a>
-            </li>
-            <li>
-              <a>Settings</a>
-            </li>
-            <li>
-              <a>Logout</a>
-            </li>
-          </ul>
-        </div>
+        ) : (
+          <Link to={"/login"} className="btn bg-primary-color text-white">
+            Login{" "}
+          </Link>
+        )}
       </div>
     </div>
   );
