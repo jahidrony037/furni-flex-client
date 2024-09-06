@@ -2,10 +2,47 @@ import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import { SiApple } from "react-icons/si";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import furnilFlex from "../../../public/furniFlex.png";
+import Loader from "../../components/shared/Loader/Loader";
+import useAuth from "../../hooks/useAuth/useAuth";
 const Login = () => {
   const [toggleEye, setToggleEye] = useState(true);
+  const [termsAndPolicy, setTermsAndPolicy] = useState(false);
+  const [termsError, setTermsError] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const { loginUser, loading, user } = useAuth();
+
+  if (loading) {
+    return <Loader />;
+  }
+
+  if (user) {
+    navigate("/");
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const email = event.target.email.value;
+    const password = event.target.password.value;
+
+    if (!termsAndPolicy) {
+      return setTermsError("You Should Check the Terms & Conditions First!");
+    }
+
+    try {
+      setTermsError("");
+      const result = await loginUser(email, password);
+      if (result?.user) {
+        navigate("/");
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   return (
     <div>
@@ -23,7 +60,7 @@ const Login = () => {
             </div>
 
             {/* login form start */}
-            <form action="">
+            <form action="" onSubmit={handleSubmit}>
               <div className="space-y-4">
                 {/* Email */}
                 <label className="form-control w-full border-[1px] border-solid border-[#DEDEDE] bg-[#FFF] pl-[11px] pt-[8px]">
@@ -35,6 +72,7 @@ const Login = () => {
                   <input
                     type="email"
                     required
+                    name="email"
                     placeholder="Enter your email"
                     className="input w-full text-[14px] font-normal  p-0 h-[35px] focus:outline-none focus:border-none"
                   />
@@ -51,6 +89,7 @@ const Login = () => {
                   <input
                     type={`${toggleEye ? "password" : "text"}`}
                     required
+                    name="password"
                     placeholder="Enter your password"
                     className="input w-full text-[14px] font-normal  p-0 h-[35px] focus:outline-none focus:border-none "
                   />
@@ -84,12 +123,21 @@ const Login = () => {
 
               {/* checkbox terms and conditions */}
               <div className="flex items-center gap-2">
-                <input type="checkbox" className="checkbox" />
+                <input
+                  onClick={() => setTermsAndPolicy(!termsAndPolicy)}
+                  type="checkbox"
+                  className="checkbox"
+                />
                 <p className="text-primary-color font-medium">
                   I agree to the{" "}
                   <span className="underline">Terms & Policy</span>
                 </p>
               </div>
+              {termsError && (
+                <p className="text-xs text-red-500 font-semibold">
+                  {termsError}
+                </p>
+              )}
 
               <input
                 type="submit"

@@ -1,12 +1,85 @@
+import { updateProfile } from "firebase/auth";
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import { SiApple } from "react-icons/si";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import furnilFlex from "../../../public/furniFlex.png";
+import Loader from "../../components/shared/Loader/Loader";
+import useAuth from "./../../hooks/useAuth/useAuth";
 
 const SignUP = () => {
   const [toggleEye, setToggleEye] = useState(true);
+  const [termsAndPolicy, setTermsAndPolicy] = useState(false);
+  const [termsError, setTermsError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const navigate = useNavigate();
+
+  // fetch the necessary methods
+  const { createUser, loading, user, logOut } = useAuth();
+
+  if (loading) {
+    return <Loader />;
+  }
+
+  if (user) {
+    navigate("/");
+  }
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    // console.log("handle submit form clicked");
+    const firstName = event.target.firstName.value;
+    const lastName = event.target.lastName.value;
+    const email = event.target.email.value;
+    const password = event.target.password.value;
+    const name = firstName + " " + lastName;
+
+    if (password.length < 6) {
+      return setPasswordError("Password Should be 6 character long");
+    }
+    setPasswordError("");
+
+    if (termsAndPolicy === false) {
+      return setTermsError("Please Select Terms and Condition first");
+    }
+    if (termsAndPolicy === true) {
+      setTermsError("");
+    }
+
+    createUser(email, password).then((result) => {
+      const user = result.user;
+      if (user) {
+        updateProfile(user, {
+          displayName: name,
+        }).then(() => {
+          Swal.fire({
+            title: "Registration Successful",
+            text: "Now you can Login!",
+            icon: "success",
+          });
+          logOut()
+            .then(() => {
+              event.target.reset();
+              navigate("/login");
+            })
+            .catch((err) => {
+              console.log(err.message);
+            });
+        });
+      }
+    });
+    // console.log(res);
+
+    const userSignUPInfo = {
+      firstName,
+      lastName,
+      email,
+      password,
+    };
+    console.log(userSignUPInfo);
+  };
   return (
     <div>
       <div className="flex justify-center items-center">
@@ -32,8 +105,8 @@ const SignUP = () => {
               </p>
             </div>
 
-            {/* login form start */}
-            <form action="">
+            {/* signUP form start */}
+            <form action="" onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div className="flex justify-between items-center gap-4">
                   {/* First Name */}
@@ -113,6 +186,12 @@ const SignUP = () => {
                   )}
                 </label>
 
+                {passwordError && (
+                  <p className="text-xs font-semibold text-red-500">
+                    {passwordError}
+                  </p>
+                )}
+
                 {/* </div> */}
               </div>
               {/* forgot password */}
@@ -127,16 +206,25 @@ const SignUP = () => {
 
               {/* checkbox terms and conditions */}
               <div className="flex items-center gap-2">
-                <input type="checkbox" className="checkbox" />
+                <input
+                  onClick={() => setTermsAndPolicy(!termsAndPolicy)}
+                  type="checkbox"
+                  className="checkbox"
+                />
                 <p className="text-primary-color font-medium">
                   I agree to the{" "}
                   <span className="underline">Terms & Policy</span>
                 </p>
               </div>
+              {termsError && (
+                <p className="text-xs text-red-500 font-semibold">
+                  {termsError}
+                </p>
+              )}
 
               <input
                 type="submit"
-                value="Sign In"
+                value="Sign UP"
                 className="btn btn-block bg-primary-color text-white rounded-[6px] mt-5"
               />
             </form>
